@@ -2,10 +2,10 @@ import React from 'react';
 
 const TodoItem = ({id, text, done, onCheckboxClick}) => {
   return(
-    <li className="Todos__item">
-      <input type="checkbox" checked={done} onChange={() => onCheckboxClick(id)} />
+    <label className="Todos__item" onChange={() => onCheckboxClick(id)}>
+      <input type="checkbox" checked={done} />
       <span className={`Todos__item-text ${done ? 'checked' : ''}`}>{text}</span>
-    </li> 
+    </label>
   )
 }
 
