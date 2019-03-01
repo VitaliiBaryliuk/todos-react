@@ -5,10 +5,8 @@ import TodoItem from './TodoItem.js';
 class TodoApp extends Component {
   state = {
     todos: [],
-    filtredTodos: [],
     filtredBy: '',
     inputValue: '',
-    leftCount: 0,
   }
 
   onInputValueChenge = (value) => {
@@ -18,7 +16,8 @@ class TodoApp extends Component {
     })
   }
 
-  addNewTodosItem = () => {
+  addNewTodosItem = (event) => {
+    event.preventDefault()
 
     if (!this.state.inputValue) {
       return
@@ -26,108 +25,83 @@ class TodoApp extends Component {
 
     this.setState(({todos, inputValue}) => {
       let newTodo = {
-        value: todos.length + 1,
+        id: todos.length + 1,
         text: inputValue,
         done: false
       }
 
       return {
         todos: [...todos, newTodo],
-        inputValue: ''
+        inputValue: '',
       }
-    }, () => {
-      this.setLeftCount()
-
-      if (this.state.filtredBy) {
-        this.setFilter(this.state.filtredBy);
-      }
-    });
+    })
   }
 
   setDone = (key) => {
 
     this.setState(({todos}) => {
-      const clickedItem = todos.find(todo => todo.value === key)
-      clickedItem.done = !clickedItem.done;
-
+ 
       return {
-        todos
-      }
-    }, () => {
-      this.setLeftCount()
-
-      if (this.state.filtredBy) {
-        this.setFilter(this.state.filtredBy);
-      }
-    })
-    
-  }
-
-  setLeftCount() {
-    this.setState(() => {
-      const leftCount = this.state.todos.filter(todo => todo.done === false).length
-      
-      return {
-        leftCount
+        todos: todos.map(todo => {
+           if (todo.id === key) {
+             return {
+               ...todo,
+               done: !todo.done
+             }
+           }
+           return todo;
+        }),
+        leftCount: todos.filter(todo => todo.done === false).length
       }
     })
   }
+
 
   setFilter(filtredBy) {
-    let filtredTodos = []
-    if (filtredBy === 'done') {
-      filtredTodos = this.state.todos.filter(todo => todo.done === true)
-    } else if (filtredBy === 'all') {
-      filtredBy = ''
-    } else {
-      filtredTodos = this.state.todos.filter(todo => todo.done === false)
-    }
     
     this.setState({
-      filtredTodos,
       filtredBy
     })
   }
 
 
 render() {
-  let { todos, inputValue, leftCount, filtredBy, filtredTodos } = this.state
+  let { todos, inputValue, filtredBy } = this.state
+  const leftCount = this.state.todos.filter(todo => todo.done === false).length
 
   if(filtredBy) {
-    todos = filtredTodos
+    if (filtredBy === 'done') {
+      todos = this.state.todos.filter(todo => todo.done === true)
+    } else if (filtredBy === 'active') {
+      todos = this.state.todos.filter(todo => todo.done === false)
+    }
   }
 
   return(
     <div className="Todos">
       <h1 className="Todos__title">Todos</h1>
-      <div className="Todos__input-wrapper">
-        <input
-          className="Todos__input"
-          type="text"
-          value={inputValue}
-          onChange={(event) => {
-            this.onInputValueChenge(event.target.value)
-          }}
-          onKeyPress={key => {
-            if (key.key === "Enter") {
-              this.addNewTodosItem()
-            }
-          }} 
-        />
-        <button
-          className="Todos__input-button"
-          onClick={() => this.addNewTodosItem() }
-        >
-          Add
-        </button>
-      </div>
+        <form className="Todos__input-wrapper" onSubmit={(event) => this.addNewTodosItem(event)}>
+          <input
+            className="Todos__input"
+            type="text"
+            value={inputValue}
+            onChange={(event) => {
+              this.onInputValueChenge(event.target.value)
+            }}
+          />
+          <button
+            className="Todos__input-button"
+          >
+            Add
+          </button>
+        </form>
       <div className="Todos__list">
         {todos.map( todo => 
           <TodoItem 
-            key={todo.value}
+            key={todo.id}
             text={todo.text}
             done={todo.done}
-            id={todo.value}
+            id={todo.id}
             onCheckboxClick={this.setDone}
         />
         )}
